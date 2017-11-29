@@ -8,6 +8,7 @@ import sys
 import time
 import tty
 import termios
+import wikipedia
 from termcolor import colored
 
 
@@ -21,7 +22,7 @@ def print_wpm(count, start, end):
     """ Print WPM """
     if end - start != 0:
         print('Word count: ' + str(count))
-        print('WPM: ' + str(int(round((WORD_COUNT / (end - start)) * 60))))
+        print('WPM: ' + str(int(round((count / (end - start)) * 60))))
 
 
 def getch():
@@ -36,63 +37,78 @@ def getch():
     return key
 
 
-# Text challenge
-# todo: load from user input and/or web
-TEXT = 'Greek is a land feature and reserve located 11 km south of Perth'
+def run(text):
+    """ Run the WPM calculator """
+    # text length
+    text_len = len(text)
+    # word count
+    word_count = len(text.split(' '))
+    # Progress counter
+    char_counter = 0
+    # First char hit flag
+    first_char = True
+    # Terminate flag
+    terminate = False
+    # Start case
+    sys.stdout.write(colored(text[char_counter], 'blue') + text[1:])
+    restart_line()
 
-# Text length
-TEXT_LEN = len(TEXT)
-
-# Word count
-WORD_COUNT = len(TEXT.split(' '))
-
-# Time handling
-start_time = 0
-end_time = 0
-
-# Progress counter
-char_counter = 0
-
-# First char hit flag
-firstChar = True
-
-# Terminate flag
-terminate = False
-
-# Get user input object
-#getch = _GetchUnix()
-
-
-# Start case
-sys.stdout.write(colored(TEXT[char_counter], 'blue') + TEXT[1:])
-restart_line()
-
-for c in TEXT:
-    while not terminate:
-        key_press = getch()
-        # User terminated program
-        if key_press == '':
-            terminate = True
-        # User hit the correct key
-        if key_press == c:
-            if firstChar:
-                # Start counting seconds when the user hit the first char
-                start_time = time.time()
-                firstChar = False
-            if char_counter == TEXT_LEN - 1:
-                # Stop counting seconds when the user hit the last char
-                end_time = time.time()
-                print(colored(TEXT, 'green'))
+    for text_char in text:
+        while not terminate:
+            key_press = getch()
+            # User terminated program
+            if key_press == 'å':
                 terminate = True
+            # User hit the correct key
+            if key_press == text_char:
+                if first_char:
+                    # Start counting seconds when the user hit the first char
+                    start_time = time.time()
+                    first_char = False
+                if char_counter == text_len - 1:
+                    # Stop counting seconds when the user hit the last char
+                    end_time = time.time()
+                    print(colored(text, 'green'))
+                    terminate = True
+                    break
+                # Update char counter and visual progress
+                char_counter += 1
+                sys.stdout.write(colored(text[0:char_counter], 'green') +
+                                 colored(text[char_counter], 'blue') +
+                                 text[char_counter + 1: text_len])
+                restart_line()
                 break
-            # Update char counter and visual progress
-            char_counter += 1
-            sys.stdout.write(colored(TEXT[0:char_counter], 'green') +
-                             colored(TEXT[char_counter], 'blue') +
-                             TEXT[char_counter + 1: TEXT_LEN])
-            restart_line()
-            break
 
-# If the user did not complete dont print summary
-if end_time != 0:
-    print_wpm(WORD_COUNT, start_time, end_time)
+    # If the user did not complete dont print summary
+    if end_time != 0:
+        print_wpm(word_count, start_time, end_time)
+
+
+def get_text(max_tries, count):
+    """ Get text challenge """
+    if count > max_tries:
+        print("Something went wrong. Using fallback text")
+        return 'Fallback text here yoyoy'
+    # Get a random wiki page
+    random = wikipedia.random(1)
+    try:
+        # Get summary of page
+        page = wikipedia.page(random).summary
+    except wikipedia.exceptions.DisambiguationError:
+        page = get_text(max_tries, count + 1)
+    splitted = page.split(' ')
+    result = ''
+    # Atm we strip the summary to 10 words, as we cannot handle multi
+    # line reset (this also means we make the nasty assumption that 10 words can fit
+    # in one line in the terminal)
+    for i in range(0, 10):
+        try:
+            result += splitted[i]
+        # Summary is less than 10 words. Return the result
+        except IndexError:
+            return result
+        if i < 9:
+            result += ' '
+    return result
+
+run(get_text(3, 0))
