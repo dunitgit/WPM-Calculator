@@ -71,6 +71,9 @@ def main(stdscr):
                 end_time = time.time()
                 stdscr.clear()
                 key = render_scorescreen(stdscr, word_count, start_time, end_time)
+                # If restart was not pressed we serve a new text
+                if key != 265:
+                    key = 266
                 continue
             # Update character counter
             char_counter += 1
