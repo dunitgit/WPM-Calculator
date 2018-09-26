@@ -70,7 +70,7 @@ def main(stdscr):
             # Update character counter
             char_counter += 1
         # User didnt hit correct key
-        elif key not in (265, 266):
+        elif key not in (265, 266) and not first_char:
             mistypes += 1
         render_text(stdscr, text, text_len, char_counter)
         render_bottom_menu(stdscr, mistypes)
