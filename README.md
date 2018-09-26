@@ -2,6 +2,10 @@
 
 Displays a random line of text from wikipedia and calculates the user's WPM
 
-## Install
+## Requirements
 
-`pipenv install`
+Python 3
+
+## Run
+
+`python3 wpm_calculator.py`

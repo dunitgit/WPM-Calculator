@@ -6,7 +6,7 @@ Words per minute calculator.
 
 import curses
 import time
-import wikipedia
+import requests
 
 def main(stdscr):
     """ Program entry point """
@@ -27,8 +27,6 @@ def main(stdscr):
     curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
     curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
     curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_GREEN)
-    # Max number of attempts to fetch text from wikipedia
-    wiki_max = 3
     # Initial user input (get next text)
     key = 266
     # Text variables
@@ -51,7 +49,7 @@ def main(stdscr):
             end_time = 0
         # F2 (New text)
         if key == 266:
-            text = get_text(wiki_max, 0)
+            text = get_random_text()
             text_len = len(text)
             word_count = len(text.split(' '))
             char_counter = 0
@@ -109,18 +107,16 @@ def render_scorescreen(stdscr, count, start, end):
     render_bottom_menu(stdscr)
     return stdscr.getch()
 
-def get_text(max_tries, count):
-    """ Get text challenge """
-    # Use fallback text if wikipedia fails to deliver
-    if count > max_tries:
-        return 'Mercury is the smallest and innermost planet in the Solar System'
+def get_random_text():
+    """ Get random text from wikipedia"""
     # Get a random wiki page
-    random = wikipedia.random(1)
-    try:
-        # Get summary of page
-        page = wikipedia.page(random).summary
-    except wikipedia.exceptions.DisambiguationError:
-        page = get_text(max_tries, count + 1)
-    return page
+    random_page = requests.get('https://en.wikipedia.org/w/api.php?'
+                               'format=json&action=query&list=random&rnlimit=1&rnnamespace=0')
+    random_page_id = str(random_page.json()['query']['random'][0]['id'])
+    page = requests.get('https://en.wikipedia.org/w/api.php?'
+                        'format=json&action=query&prop=extracts&exintro&'
+                        'explaintext&redirects=1&pageids=' + random_page_id)
+    page_summary = page.json()['query']['pages'][random_page_id]['extract']
+    return page_summary.rstrip().replace('\n', ' ').replace('\r', ' ')
 
 curses.wrapper(main)
