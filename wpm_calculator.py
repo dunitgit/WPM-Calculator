@@ -12,7 +12,7 @@ def main(stdscr):
     """ Program entry point """
     # Don't print what is typed in the terminal
     curses.noecho()
-    # React to every key press, not just when pressing "enter"
+    # React to every key press, not just when pressing 'Enter'
     curses.cbreak()
     # Enable easy key codes
     stdscr.keypad(True)
@@ -69,10 +69,11 @@ def main(stdscr):
                 continue
             # Update character counter
             char_counter += 1
-        else:
+        # User didnt hit correct key
+        elif key not in (265, 266):
             mistypes += 1
         render_text(stdscr, text, text_len, char_counter)
-        render_bottom_menu(stdscr)
+        render_bottom_menu(stdscr, mistypes)
 
         stdscr.refresh()
         key = stdscr.getch()
@@ -83,13 +84,15 @@ def render_text(stdscr, text, text_len, char_counter):
     stdscr.addstr(text[char_counter], curses.color_pair(1))
     stdscr.addstr(text[char_counter + 1: text_len])
 
-def render_bottom_menu(stdscr):
+def render_bottom_menu(stdscr, mistypes):
     """ Render bottom menu """
     bottom_menu = "Restart: 'F1' | New text: 'F2' | Quit: 'ESC'"
+    error_count = "Errors: " + str(mistypes)
     height, width = stdscr.getmaxyx()
     stdscr.attron(curses.color_pair(3))
     stdscr.addstr(height - 1, 0, bottom_menu)
     stdscr.addstr(height - 1, len(bottom_menu), " " * (width - len(bottom_menu) - 1))
+    stdscr.addstr(height - 1, width - (len(error_count) + 1), error_count)
     # Workaround to be able to color the lower right field
     stdscr.insch(height - 1, width - 1, " ")
     stdscr.attroff(curses.color_pair(3))
@@ -97,15 +100,12 @@ def render_bottom_menu(stdscr):
 def render_scorescreen(stdscr, count, start, end, mistypes):
     """ Render scorescreen """
     stdscr.addstr('Words: ' + str(count) + '\n')
+    stdscr.addstr('Errors: ' + str(mistypes) + '\n')
     stdscr.addstr('Time: ' + str(round(end - start)) + ' seconds\n')
     stdscr.addstr('WPM: ' + str(int(round((count / (end - start)) * 60))) + '\n')
-    stdscr.addstr('Errors: ' + str(mistypes) + '\n')
-    if mistypes == 0:
-        stdscr.addstr('Accuracy: 100%\n\n')
-    else:
-        stdscr.addstr('Accuracy: ' + str(round(100 - (mistypes / count) * 100)) + '%\n\n')
+    stdscr.addstr('Accuracy: ' + str(round(100 - (mistypes / count) * 100)) + '%\n\n')
     stdscr.addstr('Press any key to play again...' + '\n')
-    render_bottom_menu(stdscr)
+    render_bottom_menu(stdscr, mistypes)
     return stdscr.getch()
 
 def get_random_text():
