@@ -29,12 +29,6 @@ def main(stdscr):
     curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_GREEN)
     # Initial user input (get next text)
     key = 266
-    # Text variables
-    text = ''
-    text_len = 0
-    word_count = 0
-    char_counter = 0
-    first_char = True
 
     # Run until user press 'ESC'
     while key != 27:
@@ -47,6 +41,7 @@ def main(stdscr):
             first_char = True
             start_time = 0
             end_time = 0
+            mistypes = 0
         # F2 (New text)
         if key == 266:
             text = get_random_text()
@@ -56,7 +51,7 @@ def main(stdscr):
             first_char = True
             start_time = 0
             end_time = 0
-
+            mistypes = 0
         # User hit the correct key
         if key == ord(text[char_counter]):
             # Start timer when the user hit the first character
@@ -67,14 +62,15 @@ def main(stdscr):
             if char_counter == text_len - 1:
                 end_time = time.time()
                 stdscr.clear()
-                key = render_scorescreen(stdscr, word_count, start_time, end_time)
+                key = render_scorescreen(stdscr, word_count, start_time, end_time, mistypes)
                 # If restart was not pressed we serve a new text
-                if key != 265:
+                if key != 27:
                     key = 266
                 continue
             # Update character counter
             char_counter += 1
-
+        else:
+            mistypes += 1
         render_text(stdscr, text, text_len, char_counter)
         render_bottom_menu(stdscr)
 
@@ -98,11 +94,16 @@ def render_bottom_menu(stdscr):
     stdscr.insch(height - 1, width - 1, " ")
     stdscr.attroff(curses.color_pair(3))
 
-def render_scorescreen(stdscr, count, start, end):
+def render_scorescreen(stdscr, count, start, end, mistypes):
     """ Render scorescreen """
-    stdscr.addstr('Word count: ' + str(count) + '\n')
+    stdscr.addstr('Words: ' + str(count) + '\n')
     stdscr.addstr('Time: ' + str(round(end - start)) + ' seconds\n')
-    stdscr.addstr('WPM: ' + str(int(round((count / (end - start)) * 60))) + '\n\n')
+    stdscr.addstr('WPM: ' + str(int(round((count / (end - start)) * 60))) + '\n')
+    stdscr.addstr('Errors: ' + str(mistypes) + '\n')
+    if mistypes == 0:
+        stdscr.addstr('Accuracy: 100%\n\n')
+    else:
+        stdscr.addstr('Accuracy: ' + str(round(100 - (mistypes / count) * 100)) + '%\n\n')
     stdscr.addstr('Press any key to play again...' + '\n')
     render_bottom_menu(stdscr)
     return stdscr.getch()
