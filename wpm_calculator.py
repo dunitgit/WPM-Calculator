@@ -94,8 +94,10 @@ def render_bottom_menu(stdscr):
     bottom_menu = "Restart: 'F1' | New text: 'F2' | Quit: 'ESC'"
     height, width = stdscr.getmaxyx()
     stdscr.attron(curses.color_pair(3))
-    stdscr.addstr(height-1, 0, bottom_menu)
-    stdscr.addstr(height-1, len(bottom_menu), " " * (width - len(bottom_menu) - 1))
+    stdscr.addstr(height - 1, 0, bottom_menu)
+    stdscr.addstr(height - 1, len(bottom_menu), " " * (width - len(bottom_menu) - 1))
+    # Workaround to be able to color the lower right field
+    stdscr.insch(height - 1, width - 1, " ")
     stdscr.attroff(curses.color_pair(3))
 
 def render_scorescreen(stdscr, count, start, end):
