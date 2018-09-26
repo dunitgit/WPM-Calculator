@@ -52,7 +52,7 @@ def main(stdscr):
             end_time = 0
         # F2 (New text)
         if key == 266:
-            text = get_text(1, 0)
+            text = get_text(-1, 0)
             text_len = len(text)
             word_count = len(text.split(' '))
             char_counter = 0
@@ -102,17 +102,17 @@ def render_bottom_menu(stdscr):
 def render_scorescreen(stdscr, count, start, end):
     """ Render scorescreen """
     stdscr.addstr('Word count: ' + str(count) + '\n')
+    stdscr.addstr('Time: ' + str(round(end - start)) + ' seconds\n')
     stdscr.addstr('WPM: ' + str(int(round((count / (end - start)) * 60))) + '\n\n')
     stdscr.addstr('Press any key to play again...' + '\n')
     render_bottom_menu(stdscr)
     return stdscr.getch()
 
-
 def get_text(max_tries, count):
     """ Get text challenge """
+    # Use fallback text if wikipedia fails to deliver
     if count > max_tries:
-        print("Something went wrong. Using fallback text")
-        return 'Fallback text here yoyoy'
+        return 'Mercury is the smallest and innermost planet in the Solar System'
     # Get a random wiki page
     random = wikipedia.random(1)
     try:
