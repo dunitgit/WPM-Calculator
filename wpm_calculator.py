@@ -27,10 +27,9 @@ def main(stdscr):
     curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
     curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
     curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_GREEN)
-    # Get wikipedia text
-    text = get_text(3, 0)
-
-    # User input
+    # Max number of attempts to fetch text from wikipedia
+    wiki_max = 3
+    # Initial user input (get next text)
     key = 266
     # Text variables
     text = ''
@@ -52,7 +51,7 @@ def main(stdscr):
             end_time = 0
         # F2 (New text)
         if key == 266:
-            text = get_text(-1, 0)
+            text = get_text(wiki_max, 0)
             text_len = len(text)
             word_count = len(text.split(' '))
             char_counter = 0
